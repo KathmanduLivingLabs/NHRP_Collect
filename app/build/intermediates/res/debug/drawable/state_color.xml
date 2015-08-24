@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@android:color/background_light" android:state_pressed="true"/>
-    <item android:drawable="@android:color/transparent"/>
-</selector><!-- From: file:/home/nirab/Android/collect/app/src/main/res/drawable/state_color.xml -->

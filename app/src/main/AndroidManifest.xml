@@ -97,6 +97,11 @@
             android:label="@string/app_name" >
         </activity>
         <activity
+            android:name="com.kll.collect.android.activities.StatTable"
+            android:configChanges="orientation"
+            android:label="@string/app_name" >
+        </activity>
+        <activity
             android:name="com.kll.collect.android.activities.FormEntryActivity"
             android:configChanges="orientation"
             android:label="@string/app_name"
@@ -166,7 +171,20 @@
             </intent-filter>
         </activity>
         <activity
+            android:name="com.kll.collect.android.activities.AttachmentUploaderList"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <action android:name="android.intent.action.EDIT" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
             android:name="com.kll.collect.android.activities.InstanceUploaderActivity"
+            android:label="@string/app_name" />
+        <activity
+            android:name="com.kll.collect.android.activities.InstanceUploaderNoAttachmentActivity"
             android:label="@string/app_name" />
         <activity
             android:name="com.kll.collect.android.preferences.PreferencesActivity"

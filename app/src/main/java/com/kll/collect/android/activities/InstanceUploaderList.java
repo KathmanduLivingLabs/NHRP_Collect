@@ -224,14 +224,33 @@ public class InstanceUploaderList extends ListActivity implements
 
 	private void uploadSelectedFiles() {
 		// send list of _IDs.
-		long[] instanceIDs = new long[mSelected.size()];
+		final long[] instanceIDs = new long[mSelected.size()];
 		for (int i = 0; i < mSelected.size(); i++) {
 			instanceIDs[i] = mSelected.get(i);
 		}
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setTitle("Select to Upload");
+		builder.setMessage("Upload w ith or without Attachments");
+		builder.setPositiveButton("Upload with Attachments", new DialogInterface.OnClickListener() {
 
-		Intent i = new Intent(this, InstanceUploaderActivity.class);
-		i.putExtra(FormEntryActivity.KEY_INSTANCES, instanceIDs);
-		startActivityForResult(i, INSTANCE_UPLOADER);
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				Intent i = new Intent(InstanceUploaderList.this, InstanceUploaderActivity.class);
+				i.putExtra(FormEntryActivity.KEY_INSTANCES, instanceIDs);
+				startActivity(i);
+			}
+		});
+
+		builder.setNegativeButton("Upload without Attachments", new DialogInterface.OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				Intent i = new Intent(InstanceUploaderList.this, InstanceUploaderNoAttachmentActivity.class);
+				i.putExtra(FormEntryActivity.KEY_INSTANCES, instanceIDs);
+				startActivity(i);
+			}
+		});
+builder.show();
 	}
 
 	@Override

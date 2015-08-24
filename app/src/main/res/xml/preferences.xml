@@ -141,5 +141,15 @@
             android:layout="?android:attr/preferenceLayoutChild"
             android:title="@string/splash_path" />
     </PreferenceCategory>
+    <PreferenceCategory
+        android:key="@string/gps"
+        android:title="@string/gps" >
+        <CheckBoxPreference
+            android:id="@+id/enable_gps_fix"
+            android:defaultValue="false"
+            android:key="enable_gps_fix"
+            android:summary="@string/enable_gps_fix_summary"
+            android:title="@string/enable_gps_fix" />
 
+    </PreferenceCategory>
 </PreferenceScreen>

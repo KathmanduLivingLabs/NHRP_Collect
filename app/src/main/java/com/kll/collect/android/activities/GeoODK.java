@@ -70,14 +70,14 @@ public class GeoODK extends Activity {
 		
 		ImageButton geoodk_collect_button = (ImageButton) findViewById(R.id.geoodk_collect_butt);
         geoodk_collect_button.setOnClickListener(new View.OnClickListener() {
-		    public void onClick(View v) {
-		        // Do something in response to button click
+			public void onClick(View v) {
+				// Do something in response to button click
 				Collect.getInstance().getActivityLogger().logAction(this, "fillBlankForm", "click");
-				Intent i = new Intent(getApplicationContext(),FormChooserList.class);
+				Intent i = new Intent(getApplicationContext(), FormChooserList.class);
 				startActivity(i);
-		    }
+			}
 		});
-       
+
         ImageButton geoodk_manage_but = (ImageButton) findViewById(R.id.geoodk_edit_butt);
 		geoodk_manage_but.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
@@ -106,7 +106,7 @@ public class GeoODK extends Activity {
 			public void onClick(View v) {
 				Collect.getInstance()
 				.getActivityLogger()
-				.logAction(this,"Main_Settings","click");
+				.logAction(this, "Main_Settings", "click");
 				Intent ig = new Intent( getApplicationContext(), MainSettingsActivity.class);
 						startActivity(ig);
 			}
@@ -124,6 +124,30 @@ public class GeoODK extends Activity {
 					startActivity(i);
 			}
 		});
+		ImageButton geoodk_send_attachment_but = (ImageButton) findViewById(R.id.geoodk_send_attachment_butt);
+		geoodk_send_attachment_but.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				Collect.getInstance().getActivityLogger()
+						.logAction(this, "uploadForms", "click");
+				Intent i = new Intent(getApplicationContext(),
+						AttachmentUploaderList.class);
+				startActivity(i);
+			}
+		});
+		ImageButton geoodk_stat_but = (ImageButton) findViewById(R.id.geoodk_stat_butt);
+		geoodk_stat_but.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Collect.getInstance().getActivityLogger()
+						.logAction(this, "stat", "click");
+				Intent i = new Intent(getApplicationContext(),
+						StatTable.class);
+				startActivity(i);
+			}
+		});
+
 		ImageButton geoodk_delete_but = (ImageButton) findViewById(R.id.geoodk_delete_data_butt);
 		geoodk_delete_but.setOnClickListener(new View.OnClickListener() {
 			@Override

@@ -131,6 +131,7 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
     private Intent intent = null;
     private ExternalDataManager externalDataManager;
 
+
     protected class FECWrapper {
         FormController controller;
         boolean usedSavepoint;
@@ -177,6 +178,8 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
         String formPath = path[0];
 
         File formXml = new File(formPath);
+
+
         String formHash = FileUtils.getMd5Hash(formXml);
         File formBin = new File(Collect.CACHE_PATH + File.separator + formHash + ".formdef");
 
@@ -318,9 +321,11 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
         // for itemsets.csv, we only check to see if the itemset file has been
         // updated
         File csv = new File(formMediaDir.getAbsolutePath() + "/" + ITEMSETS_CSV);
+
         String csvmd5 = null;
         if (csv.exists()) {
             csvmd5 = FileUtils.getMd5Hash(csv);
+            Log.i("CSVMD5",csvmd5);
             boolean readFile = false;
             ItemsetDbAdapter ida = new ItemsetDbAdapter();
             ida.open();
@@ -392,6 +397,7 @@ public class FormLoaderTask extends AsyncTask<String, String, FormLoaderTask.FEC
         return data;
 
     }
+
 
     @SuppressWarnings("unchecked")
     private void loadExternalData(File mediaFolder) {

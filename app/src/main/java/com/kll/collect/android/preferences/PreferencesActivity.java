@@ -63,6 +63,7 @@ public class PreferencesActivity extends PreferenceActivity implements
 	public static final String KEY_FONT_SIZE = "font_size";
 	public static final String KEY_SELECTED_GOOGLE_ACCOUNT = "selected_google_account";
 	public static final String KEY_GOOGLE_SUBMISSION = "google_submission_id";
+	public static final String KEY_GPS_FIX = "enable_gps_fix";
 
 	public static final String KEY_SERVER_URL = "server_url";
 	public static final String KEY_USERNAME = "username";
@@ -111,6 +112,7 @@ public class PreferencesActivity extends PreferenceActivity implements
 
 	private CheckBoxPreference mAutosendWifiPreference;
 	private CheckBoxPreference mAutosendNetworkPreference;
+	private CheckBoxPreference mEnableGpsFixPreference;
 	private ListPreference mProtocolPreference;
 
 	@Override
@@ -133,9 +135,13 @@ public class PreferencesActivity extends PreferenceActivity implements
 				AdminPreferencesActivity.KEY_CHANGE_SERVER, true);
 		boolean urlAvailable = adminPreferences.getBoolean(
 				AdminPreferencesActivity.KEY_CHANGE_URL, true);
+		PreferenceCategory gpsFixCategory = (PreferenceCategory) findPreference(getString(R.string.gps));
+		mEnableGpsFixPreference = (CheckBoxPreference) findPreference(KEY_GPS_FIX);
+		boolean enableGPSFix =mEnableGpsFixPreference.isChecked();
 
-		PreferenceCategory autosendCategory = (PreferenceCategory) findPreference(getString(R.string.autosend));
+				PreferenceCategory autosendCategory = (PreferenceCategory) findPreference(getString(R.string.autosend));
 		mAutosendWifiPreference = (CheckBoxPreference) findPreference(KEY_AUTOSEND_WIFI);
+
 		boolean autosendWifiAvailable = adminPreferences.getBoolean(
 				AdminPreferencesActivity.KEY_AUTOSEND_WIFI, true);
 		if (!(autosendWifiAvailable || adminMode)) {

@@ -20,6 +20,7 @@ public class MainSettingsActivity extends Activity implements OnItemClickListene
 	final static int general_settings_id = 1;
 	final static int admin_settings_id = 2;
 	final static int map_settings_id = 3;
+	final static int gps_setting_id = 4;
 	
 
 	@Override

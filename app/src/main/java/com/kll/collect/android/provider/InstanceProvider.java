@@ -35,6 +35,7 @@ import android.util.Log;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
@@ -180,7 +181,11 @@ public class InstanceProvider extends ContentProvider {
             values = new ContentValues();
         }
 
-        Long now = Long.valueOf(System.currentTimeMillis());
+        Long l = Long.valueOf(System.currentTimeMillis());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(l);
+        String now = sdf.format(calendar.getTimeInMillis());
 
         // Make sure that the fields are all set
         if (values.containsKey(InstanceColumns.LAST_STATUS_CHANGE_DATE) == false) {
@@ -211,6 +216,7 @@ public class InstanceProvider extends ContentProvider {
     }
 
     private String getDisplaySubtext(String state, Date date) {
+
         if (state == null) {
         	return new SimpleDateFormat(getContext().getString(R.string.added_on_date_at_time), Locale.getDefault()).format(date);
         } else if (InstanceProviderAPI.STATUS_INCOMPLETE.equalsIgnoreCase(state)) {
@@ -327,7 +333,11 @@ public class InstanceProvider extends ContentProvider {
     public int update(Uri uri, ContentValues values, String where, String[] whereArgs) {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
-        Long now = Long.valueOf(System.currentTimeMillis());
+        Long l = Long.valueOf(System.currentTimeMillis());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(l);
+        String now = sdf.format(calendar.getTimeInMillis());
 
         // Make sure that the fields are all set
         if (values.containsKey(InstanceColumns.LAST_STATUS_CHANGE_DATE) == false) {

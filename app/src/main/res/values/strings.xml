@@ -133,6 +133,7 @@
     <string name="saving_form">Saving Form</string>
     <string name="sending_items">Sending %1$s of %2$s form(s)</string>
     <string name="send_data">Send Finalized Form</string>
+    <string name="send_attachment">Send Attachments</string>
     <string name="send_data_button">Send Finalized Form (%s)</string>
     <string name="send_selected_data">Send Selected</string>
     <string name="server_auth_credentials">Please enter username and password for server:\n%s</string>
@@ -325,5 +326,8 @@
     <string name="view_shape">Edit Shape</string>
     <string name="record_trace">Record GeoTrace</string>
     <string name="view_trace">View GeoTrace</string>
+    <string name="gps">GPS</string>
+    <string name="enable_gps_fix_summary">Start fixing gps on start of the every survey</string>
+    <string name="enable_gps_fix">Enable GPS fix</string>
 
 </resources>

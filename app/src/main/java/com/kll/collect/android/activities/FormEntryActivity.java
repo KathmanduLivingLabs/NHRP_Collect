@@ -19,6 +19,7 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.LinkedHashMap;
@@ -32,6 +33,7 @@ import org.javarosa.form.api.FormEntryCaption;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryPrompt;
 import org.javarosa.model.xform.XFormsModule;
+import org.javarosa.xform.parse.XFormParser;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -58,6 +60,7 @@ import com.kll.collect.android.tasks.SaveResult;
 import com.kll.collect.android.tasks.SaveToDiskTask;
 import com.kll.collect.android.utilities.CompatibilityUtils;
 import com.kll.collect.android.utilities.FileUtils;
+import com.kll.collect.android.utilities.InfoLogger;
 import com.kll.collect.android.utilities.MediaUtils;
 import com.kll.collect.android.views.ODKView;
 import com.kll.collect.android.widgets.QuestionWidget;
@@ -75,6 +78,10 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.location.LocationProvider;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -120,7 +127,7 @@ import android.widget.Toast;
  */
 public class FormEntryActivity extends Activity implements AnimationListener,
 		FormLoaderListener, FormSavedListener, AdvanceToNextListener,
-		OnGestureListener, SavePointListener {
+		OnGestureListener, SavePointListener,LocationListener {
 	private static final String t = "FormEntryActivity";
 
 	// save with every swipe forward or back. Timings indicate this takes .25
@@ -219,11 +226,22 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 	private ImageButton mNextButton;
 	private ImageButton mBackButton;
 
+
+
     private String stepMessage = "";
 
 	enum AnimationType {
 		LEFT, RIGHT, FADE
 	}
+
+	private LocationManager mLocationManager;
+	private Location mLocation;
+	private boolean mGPSOn = false;
+	private boolean mNetworkOn = false;
+	private double mLocationAccuracy;
+	private int mLocationCount = 0;
+
+	private boolean needLocation = false;
 
 	private SharedPreferences mAdminPreferences;
 
@@ -245,7 +263,8 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 		setTitle(getString(R.string.app_name) + " > "
 				+ getString(R.string.loading_form));
 
-        mErrorMessage = null;
+		Log.i("Entry", "Form");
+		mErrorMessage = null;
 
         mBeenSwiped = false;
 		mAlertDialog = null;
@@ -340,6 +359,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 					// TODO: this doesn' work (dialog does not get removed):
 					// showDialog(PROGRESS_DIALOG);
 					// show dialog before we execute...
+					Log.i("Loader","Executing");
 					mFormLoaderTask.execute(mFormPath);
 				}
 				return;
@@ -522,10 +542,15 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 						.logAction(this, "formLoaded", mFormPath);
 				showDialog(PROGRESS_DIALOG);
 				// show dialog before we execute...
+				Log.i("Loader","Executing");
 				mFormLoaderTask.execute(mFormPath);
 			}
 		}
+
+
 	}
+
+
 
     /**
      * Create save-points asynchronously in order to not affect swiping performance
@@ -567,6 +592,8 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 	protected void onActivityResult(int requestCode, int resultCode,
 			Intent intent) {
 		super.onActivityResult(requestCode, resultCode, intent);
+		Log.i("Request Code", Integer.toString(requestCode));
+		Log.i("Result Code",Integer.toString(resultCode));
 		FormController formController = Collect.getInstance()
 				.getFormController();
 		if (formController == null) {
@@ -590,8 +617,9 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			}
 			return;
 		}
-
+		Log.i("Request Code ",Integer.toString(requestCode));
 		switch (requestCode) {
+
 		case BARCODE_CAPTURE:
 			String sb = intent.getStringExtra("SCAN_RESULT");
 			((ODKView) mCurrentView).setBinaryData(sb);
@@ -630,6 +658,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			 */
 			// The intent is empty, but we know we saved the image to the temp
 			// file
+			Log.i("Request Code ",Integer.toString(requestCode));
 			File fi = new File(Collect.TMPFILE_PATH);
 			String mInstanceFolder = formController.getInstancePath()
 					.getParent();
@@ -712,6 +741,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			saveAnswersForCurrentScreen(DO_NOT_EVALUATE_CONSTRAINTS);
 			break;
 		case LOCATION_CAPTURE:
+			Log.i("Request Code ",Integer.toString(requestCode));
 			String sl = intent.getStringExtra(LOCATION_RESULT);
 			((ODKView) mCurrentView).setBinaryData(sl);
 			saveAnswersForCurrentScreen(DO_NOT_EVALUATE_CONSTRAINTS);
@@ -980,6 +1010,55 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			saveAnswersForCurrentScreen(DO_NOT_EVALUATE_CONSTRAINTS);
 		}
 		return null;
+	}
+	@Override
+	public void onLocationChanged(Location location) {
+		mLocation = location;
+		if (mLocation != null) {
+			// Bug report: cached GeoPoint is being returned as the first value.
+			// Wait for the 2nd value to be returned, which is hopefully not cached?
+			++mLocationCount;
+			InfoLogger.geolog("GeoPointActivity: " + System.currentTimeMillis() +
+					" onLocationChanged(" + mLocationCount + ") lat: " +
+					mLocation.getLatitude() + " long: " +
+					mLocation.getLongitude() + " acc: " +
+					mLocation.getAccuracy());
+			Log.i("lat=", Double.toString(mLocation.getLatitude()));
+			Log.i("lat=", Double.toString(mLocation.getLongitude()));
+			Log.i("lat=", Double.toString(mLocation.getAccuracy()));
+
+		} else {
+			InfoLogger.geolog("GeoPointActivity: " + System.currentTimeMillis() +
+					" onLocationChanged(" + mLocationCount + ") null location");
+		}
+	}
+
+
+
+
+	@Override
+	public void onProviderDisabled(String provider) {
+
+	}
+
+
+	@Override
+	public void onProviderEnabled(String provider) {
+
+	}
+
+
+	@Override
+	public void onStatusChanged(String provider, int status, Bundle extras) {
+		switch (status) {
+			case LocationProvider.AVAILABLE:
+
+				break;
+			case LocationProvider.OUT_OF_SERVICE:
+				break;
+			case LocationProvider.TEMPORARILY_UNAVAILABLE:
+				break;
+		}
 	}
 
 	/**
@@ -2079,7 +2158,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 						new DialogInterface.OnClickListener() {
 							@Override
 							public void onClick(DialogInterface dialog,
-									int whichButton) {
+												int whichButton) {
 								FormController formController = Collect
 										.getInstance().getFormController();
 								// Update the language in the content provider
@@ -2090,7 +2169,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 										languages[whichButton]);
 								String selection = FormsColumns.FORM_FILE_PATH
 										+ "=?";
-								String selectArgs[] = { mFormPath };
+								String selectArgs[] = {mFormPath};
 								int updated = getContentResolver().update(
 										FormsColumns.CONTENT_URI, values,
 										selection, selectArgs);
@@ -2119,7 +2198,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 						new DialogInterface.OnClickListener() {
 							@Override
 							public void onClick(DialogInterface dialog,
-									int whichButton) {
+												int whichButton) {
 								Collect.getInstance()
 										.getActivityLogger()
 										.logInstanceAction(this,
@@ -2242,6 +2321,9 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 		FormController formController = Collect.getInstance()
 				.getFormController();
 		dismissDialogs();
+		if(mLocationManager!=null) {
+			mLocationManager.removeUpdates(this);
+		}
 		// make sure we're not already saving to disk. if we are, currentPrompt
 		// is getting constantly updated
 		if (mSaveToDiskTask == null
@@ -2258,8 +2340,10 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 	@Override
 	protected void onResume() {
 		super.onResume();
-
-        if (mErrorMessage != null) {
+		if(mLocationManager!=null) {
+			mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5, this);
+		}
+			if (mErrorMessage != null) {
             if (mAlertDialog != null && !mAlertDialog.isShowing()) {
                 createErrorDialog(mErrorMessage, EXIT);
             } else {
@@ -2357,6 +2441,9 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 
 	@Override
 	protected void onDestroy() {
+		if(mLocationManager!=null) {
+			mLocationManager.removeUpdates(this);
+		}
 		if (mFormLoaderTask != null) {
 			mFormLoaderTask.setFormLoaderListener(null);
 			// We have to call cancel to terminate the thread, otherwise it
@@ -2424,7 +2511,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 		// Added by AnimationListener interface.
 		Log.i(t, "onAnimationRepeat "
 				+ ((animation == mInAnimation) ? "in"
-						: ((animation == mOutAnimation) ? "out" : "other")));
+				: ((animation == mOutAnimation) ? "out" : "other")));
 	}
 
 	@Override
@@ -2442,12 +2529,19 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 	@Override
 	public void loadingComplete(FormLoaderTask task) {
 		dismissDialog(PROGRESS_DIALOG);
+		Log.i("Form Loading", "Complete");
 
 		FormController formController = task.getFormController();
 		boolean pendingActivityResult = task.hasPendingActivityResult();
 		boolean hasUsedSavepoint = task.hasUsedSavepoint();
-		int requestCode = task.getRequestCode(); // these are bogus if
-													// pendingActivityResult is
+		int requestCode = task.getRequestCode();
+		SharedPreferences mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+		needLocation = mSharedPreferences.getBoolean(PreferencesActivity.KEY_GPS_FIX,false);
+		if(needLocation){
+			mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+			mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5, this);
+		}// these are bogus if
+		Log.i("Reqest Code",Integer.toString(requestCode));// pendingActivityResult is
 													// false
 		int resultCode = task.getResultCode();
 		Intent intent = task.getIntent();
@@ -2848,12 +2942,18 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 	@Override
 	protected void onStart() {
 		super.onStart();
+		if(mLocationManager!=null) {
+			mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5, this);
+		}
 		Collect.getInstance().getActivityLogger().logOnStart(this);
 	}
 
 	@Override
 	protected void onStop() {
 		Collect.getInstance().getActivityLogger().logOnStop(this);
+		if(mLocationManager!=null) {
+			mLocationManager.removeUpdates(this);
+		}
 		super.onStop();
 	}
 
