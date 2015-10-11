@@ -391,7 +391,7 @@ ADDED from AndroidManifest.xml:243:9
 		ADDED from AndroidManifest.xml:245:13
 	android:name
 		ADDED from AndroidManifest.xml:244:13
-activity#com.kll.collect.android.activities.GeoTraceActivity
+activity#com.kll.collect.android.activities.GeoShapeActivity.GeoTraceActivity
 ADDED from AndroidManifest.xml:248:9
 	android:label
 		ADDED from AndroidManifest.xml:251:13

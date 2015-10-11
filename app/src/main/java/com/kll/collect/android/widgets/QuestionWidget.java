@@ -25,6 +25,7 @@ import com.kll.collect.android.views.MediaLayout;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -84,6 +85,7 @@ public abstract class QuestionWidget extends LinearLayout {
 
         addQuestionText(p);
         addHelpText(p);
+
     }
 
     public void playAudio() {
@@ -173,6 +175,7 @@ public abstract class QuestionWidget extends LinearLayout {
         String promptText = p.getLongText();
         // Add the text view. Textview always exists, regardless of whether there's text.
         mQuestionText = new TextView(getContext());
+        mQuestionText.setBackgroundColor(0xFFC0C0C0);
         mQuestionText.setText(promptText == null ? "" : promptText);
         mQuestionText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mQuestionFontsize);
         mQuestionText.setTypeface(null, Typeface.BOLD);
@@ -197,6 +200,7 @@ public abstract class QuestionWidget extends LinearLayout {
     /**
      * Add a TextView containing the help text.
      */
+
     private void addHelpText(FormEntryPrompt p) {
 
         String s = p.getHelpText();

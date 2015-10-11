@@ -76,6 +76,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
@@ -114,6 +115,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -197,6 +199,9 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 	private static final int PROGRESS_DIALOG = 1;
 	private static final int SAVING_DIALOG = 2;
 
+	private static final int NEXT  = 1;
+	private static final int PREVIOUS  = 2;
+
 	// Random ID
 	private static final int DELETE_REPEAT = 654321;
 
@@ -207,6 +212,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 	private Animation mOutAnimation;
 	private View mStaleView = null;
 
+	private ProgressBar progressBar;
 	private LinearLayout mQuestionHolder;
 	private View mCurrentView;
 
@@ -230,6 +236,8 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 
     private String stepMessage = "";
 
+	private double progressValue = 0.0;
+	private String FIELD_LIST = "field-list";
 	enum AnimationType {
 		LEFT, RIGHT, FADE
 	}
@@ -265,6 +273,11 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 
 		Log.i("Entry", "Form");
 		mErrorMessage = null;
+		progressBar = (ProgressBar) findViewById(R.id.progress);
+		progressBar.setVisibility(ProgressBar.VISIBLE);
+		progressBar.setProgress(0);
+
+
 
         mBeenSwiped = false;
 		mAlertDialog = null;
@@ -284,7 +297,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			public void onClick(View v) {
 				mBeenSwiped = true;
 				showNextView();
-			}
+							}
 		});
 
 		mBackButton = (ImageButton) findViewById(R.id.form_back_button);
@@ -593,7 +606,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			Intent intent) {
 		super.onActivityResult(requestCode, resultCode, intent);
 		Log.i("Request Code", Integer.toString(requestCode));
-		Log.i("Result Code",Integer.toString(resultCode));
+		Log.i("Result Code", Integer.toString(resultCode));
 		FormController formController = Collect.getInstance()
 				.getFormController();
 		if (formController == null) {
@@ -617,7 +630,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			}
 			return;
 		}
-		Log.i("Request Code ",Integer.toString(requestCode));
+		Log.i("Request Code ", Integer.toString(requestCode));
 		switch (requestCode) {
 
 		case BARCODE_CAPTURE:
@@ -793,7 +806,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 		if (event == FormEntryController.EVENT_PROMPT_NEW_REPEAT) {
 			createRepeatDialog();
 		} else {
-			View current = createView(event, false);
+			View current = createView(event, false,0);
 			showView(current, AnimationType.FADE);
 		}
 	}
@@ -918,6 +931,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 				.getFormController();
 		// only try to save if the current event is a question or a field-list
 		// group
+
 		if (formController.currentPromptIsQuestion()) {
 			LinkedHashMap<FormIndex, IAnswerData> answers = ((ODKView) mCurrentView)
 					.getAnswers();
@@ -1069,14 +1083,17 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 	 *            -- true if this results from advancing through the form
 	 * @return newly created View
 	 */
-	private View createView(int event, boolean advancingPage) {
+	private View createView(int event, boolean advancingPage,int swipeCase) {
 		FormController formController = Collect.getInstance()
 				.getFormController();
 		setTitle(getString(R.string.app_name) + " > "
 				+ formController.getFormTitle());
+		int questioncount = formController.getFormDef().getDeepChildCount();
 
 		switch (event) {
 		case FormEntryController.EVENT_BEGINNING_OF_FORM:
+			progressValue = 0.0;
+			progressUpdate(progressValue,questioncount);
 			View startView = View
 					.inflate(this, R.layout.form_entry_start, null);
 			setTitle(getString(R.string.app_name) + " > "
@@ -1159,7 +1176,11 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 
 			return startView;
 		case FormEntryController.EVENT_END_OF_FORM:
+			progressValue = questioncount;
+			progressUpdate(progressValue,questioncount);
 			View endView = View.inflate(this, R.layout.form_entry_end, null);
+
+			((ImageView) endView.findViewById(R.id.completed)).setImageDrawable(getResources().getDrawable(R.drawable.complete_tick));
 			((TextView) endView.findViewById(R.id.description))
 					.setText(getString(R.string.save_enter_data_description,
 							formController.getFormTitle()));
@@ -1288,6 +1309,30 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			ODKView odkv = null;
 			// should only be a group here if the event_group is a field-list
 			try {
+				double depth = (double) formController.getFormIndex().getDepth();
+				double local_index = (double) formController.getFormIndex().getLocalIndex();
+				double instance_index = (double) formController.getFormIndex().getInstanceIndex();
+				Log.i("Question coint",Integer.toString(questioncount));
+
+				Log.i("Depth",Integer.toString(formController.getFormIndex().getDepth()));
+				Log.i("Local Index", Integer.toString(formController.getFormIndex().getLocalIndex()));
+				Log.i("Instance Index",Integer.toString(formController.getFormIndex().getInstanceIndex()));
+
+
+
+				if(swipeCase == NEXT){
+
+
+					Log.i("progressValue", Double.toString(progressValue));
+
+				}
+				if (swipeCase == PREVIOUS){
+					progressValue = progressValue-(1-(instance_index*local_index/questioncount*depth));
+
+					Log.i("progressValue", Double.toString(progressValue));
+				}
+				Log.i("progressValue", Double.toString(progressValue));
+				progressUpdate(progressValue,questioncount);
 				FormEntryPrompt[] prompts = formController.getQuestionPrompts();
 				FormEntryCaption[] groups = formController
 						.getGroupsForCurrentIndex();
@@ -1310,7 +1355,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
                     Log.e(t, e1.getMessage(), e1);
                     createErrorDialog(e.getMessage() + "\n\n" + e1.getCause().getMessage(), DO_NOT_EXIT);
                 }
-                return createView(event, advancingPage);
+                return createView(event, advancingPage,swipeCase);
             }
 
 			// Makes a "clear answer" menu pop up on long-click
@@ -1335,17 +1380,25 @@ public class FormEntryActivity extends Activity implements AnimationListener,
                 Log.e(t, e.getMessage(), e);
                 createErrorDialog(e.getCause().getMessage(), EXIT);
             }
-            return createView(event, advancingPage);
+			return createView(event, advancingPage,swipeCase);
 		}
+
+	}
+
+	private void progressUpdate(double progressValue, int questioncount) {
+		double progress =  ( progressValue / (double) questioncount) * 100;
+		Log.i("Progess", Double.toString(progress));
+		progressBar.setProgress((int) progress);
+		Log.i("Index", Integer.toString(questioncount));
 	}
 
 
-    public String getSaveName() {
+	public String getSaveName() {
         //TODO
         FormController formController = Collect.getInstance()
                 .getFormController();
         String saveName = formController.getSubmissionMetadata().instanceName;
-        if(mAdminPreferences.getBoolean("savename_from_input",false)) {
+        if(mAdminPreferences.getBoolean("savename_from_input", false)) {
             if(!mAdminPreferences.getString("defaultsave_field","").equals("")) {
                 try {
                     ByteArrayPayload submissionXml = formController.getSubmissionXml();
@@ -1445,10 +1498,11 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 
             // get constraint behavior preference value with appropriate default
             String constraint_behavior = PreferenceManager.getDefaultSharedPreferences(this)
-                    .getString(PreferencesActivity.KEY_CONSTRAINT_BEHAVIOR,
-                            PreferencesActivity.CONSTRAINT_BEHAVIOR_DEFAULT);
+					.getString(PreferencesActivity.KEY_CONSTRAINT_BEHAVIOR,
+							PreferencesActivity.CONSTRAINT_BEHAVIOR_DEFAULT);
 
-            if (formController.currentPromptIsQuestion()) {
+
+			            if (formController.currentPromptIsQuestion()) {
 
                 // if constraint behavior says we should validate on swipe, do so
                 if (constraint_behavior.equals(PreferencesActivity.CONSTRAINT_BEHAVIOR_ON_SWIPE)) {
@@ -1469,17 +1523,18 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 
             switch (event) {
                 case FormEntryController.EVENT_QUESTION:
-                case FormEntryController.EVENT_GROUP:
+				case FormEntryController.EVENT_GROUP:
                     // create a savepoint
                     if ((++viewCount) % SAVEPOINT_INTERVAL == 0) {
                         nonblockingCreateSavePointData();
+
                     }
-                    next = createView(event, true);
+                    next = createView(event, true,NEXT);
                     showView(next, AnimationType.RIGHT);
                     break;
                 case FormEntryController.EVENT_END_OF_FORM:
-                case FormEntryController.EVENT_REPEAT:
-                    next = createView(event, true);
+				case FormEntryController.EVENT_REPEAT:
+                    next = createView(event, true,NEXT);
                     showView(next, AnimationType.RIGHT);
                     break;
                 case FormEntryController.EVENT_PROMPT_NEW_REPEAT:
@@ -1495,10 +1550,12 @@ public class FormEntryActivity extends Activity implements AnimationListener,
                             "JavaRosa added a new EVENT type and didn't tell us... shame on them.");
                     break;
             }
+
         } catch (JavaRosaException e) {
             Log.e(t, e.getMessage(), e);
             createErrorDialog(e.getCause().getMessage(), DO_NOT_EXIT);
         }
+
     }
 
 	/**
@@ -1512,6 +1569,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
                     .getFormController();
             // The answer is saved on a back swipe, but question constraints are
             // ignored.
+
             if (formController.currentPromptIsQuestion()) {
                 saveAnswersForCurrentScreen(DO_NOT_EVALUATE_CONSTRAINTS);
             }
@@ -1527,15 +1585,17 @@ public class FormEntryActivity extends Activity implements AnimationListener,
                         nonblockingCreateSavePointData();
                     }
                 }
-                View next = createView(event, false);
+                View next = createView(event, false,PREVIOUS);
                 showView(next, AnimationType.LEFT);
             } else {
                 mBeenSwiped = false;
             }
+
         } catch (JavaRosaException e) {
             Log.e(t, e.getMessage(), e);
             createErrorDialog(e.getCause().getMessage(), DO_NOT_EXIT);
         }
+
     }
 
 	/**
@@ -1551,6 +1611,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 		}
 		if (mOutAnimation != null) {
 			mOutAnimation.setAnimationListener(null);
+
 		}
 
 		// logging of the view being shown is already done, as this was handled
