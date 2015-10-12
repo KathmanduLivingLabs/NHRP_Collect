@@ -188,6 +188,7 @@ public class ImageWidget extends QuestionWidget implements IBinaryWidget {
 
             if (f.exists()) {
                 Bitmap bmp = FileUtils.getBitmapScaledToDisplay(f, screenHeight, screenWidth);
+
                 if (bmp == null) {
                     mErrorTextView.setVisibility(View.VISIBLE);
                 }

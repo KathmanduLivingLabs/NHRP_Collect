@@ -14,8 +14,12 @@
 
 package com.kll.collect.android.activities;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
@@ -26,6 +30,8 @@ import java.util.LinkedHashMap;
 import java.util.Locale;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.http.entity.mime.content.ContentBody;
+import org.apache.http.entity.mime.content.InputStreamBody;
 import org.javarosa.core.model.FormIndex;
 import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.core.services.transport.payload.ByteArrayPayload;
@@ -64,6 +70,7 @@ import com.kll.collect.android.utilities.InfoLogger;
 import com.kll.collect.android.utilities.MediaUtils;
 import com.kll.collect.android.views.ODKView;
 import com.kll.collect.android.widgets.QuestionWidget;
+import com.kll.collect.android.utilities.ScalingUtilities;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -75,6 +82,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
@@ -86,6 +95,7 @@ import android.location.LocationProvider;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore.Images;
 import android.text.InputFilter;
@@ -205,6 +215,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 	// Random ID
 	private static final int DELETE_REPEAT = 654321;
 
+
 	private String mFormPath;
 	private GestureDetector mGestureDetector;
 
@@ -250,8 +261,10 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 	private int mLocationCount = 0;
 
 	private boolean needLocation = false;
+	private boolean compressImage = false;
 
 	private SharedPreferences mAdminPreferences;
+	private SharedPreferences mSharedPreferences;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -266,7 +279,13 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			createErrorDialog(e.getMessage(), EXIT);
 			return;
 		}
-
+		 mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+		mSharedPreferences.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
+			@Override
+			public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+				compressImage = mSharedPreferences.getBoolean(PreferencesActivity.KEY_ENABLE_IMAGE_COMPRESSION,false);
+			}
+		});
 		setContentView(R.layout.form_entry);
 		setTitle(getString(R.string.app_name) + " > "
 				+ getString(R.string.loading_form));
@@ -622,6 +641,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			}
 			return;
 		}
+		compressImage = mSharedPreferences.getBoolean(PreferencesActivity.KEY_ENABLE_IMAGE_COMPRESSION,false);
 
 		if (resultCode == RESULT_CANCELED) {
 			// request was canceled...
@@ -686,8 +706,12 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 						"renamed " + fi.getAbsolutePath() + " to "
 								+ nf.getAbsolutePath());
 			}
+			Log.i("Filename of image",String.valueOf(nf));
+			if(compressImage)
+				compreesImage(s);
 
-			((ODKView) mCurrentView).setBinaryData(nf);
+
+					((ODKView) mCurrentView).setBinaryData(nf);
 			saveAnswersForCurrentScreen(DO_NOT_EVALUATE_CONSTRAINTS);
 			break;
 		case ALIGNED_IMAGE:
@@ -711,6 +735,8 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 						"renamed " + fi.getAbsolutePath() + " to "
 								+ nf.getAbsolutePath());
 			}
+			if(compressImage)
+				compreesImage(s);
 
 			((ODKView) mCurrentView).setBinaryData(nf);
 			saveAnswersForCurrentScreen(DO_NOT_EVALUATE_CONSTRAINTS);
@@ -738,8 +764,12 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			File newImage = new File(destImagePath);
 			FileUtils.copyFile(source, newImage);
 
+			if(compressImage)
+				compreesImage(destImagePath);
+
 			((ODKView) mCurrentView).setBinaryData(newImage);
 			saveAnswersForCurrentScreen(DO_NOT_EVALUATE_CONSTRAINTS);
+
 			break;
 		case AUDIO_CAPTURE:
 		case VIDEO_CAPTURE:
@@ -781,6 +811,52 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 
 		}
 		refreshCurrentView();
+	}
+
+	private void compreesImage(String path) {
+
+		Bitmap scaledBitmap = null;
+		try {
+			// Part 1: Decode image
+			Bitmap unscaledBitmap = ScalingUtilities.decodeFile(path, ScalingUtilities.DESIREDWIDTH, ScalingUtilities.DESIREDHEIGHT, ScalingUtilities.ScalingLogic.FIT);
+
+			if (!(unscaledBitmap.getWidth() <= 800 && unscaledBitmap.getHeight() <= 800)) {
+				// Part 2: Scale image
+				scaledBitmap = ScalingUtilities.createScaledBitmap(unscaledBitmap, ScalingUtilities.DESIREDWIDTH, ScalingUtilities.DESIREDHEIGHT, ScalingUtilities.ScalingLogic.FIT);
+			} else {
+				unscaledBitmap.recycle();
+
+			}
+
+			// Store to tmp file
+
+
+
+
+
+
+			File f = new File(path);
+
+
+			FileOutputStream fos = null;
+			try {
+				fos = new FileOutputStream(f);
+				scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+				fos.flush();
+				fos.close();
+			} catch (FileNotFoundException e) {
+
+				e.printStackTrace();
+			} catch (Exception e) {
+
+				e.printStackTrace();
+			}
+
+			scaledBitmap.recycle();
+		} catch (Throwable e) {
+		}
+
+
 	}
 
 	/**
@@ -2401,16 +2477,18 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 	@Override
 	protected void onResume() {
 		super.onResume();
-		if(mLocationManager!=null) {
-			mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5, this);
-		}
+		if (needLocation) {
+			if (mLocationManager != null) {
+				mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5, this);
+			}
 			if (mErrorMessage != null) {
-            if (mAlertDialog != null && !mAlertDialog.isShowing()) {
-                createErrorDialog(mErrorMessage, EXIT);
-            } else {
-                return;
-            }
-        }
+				if (mAlertDialog != null && !mAlertDialog.isShowing()) {
+					createErrorDialog(mErrorMessage, EXIT);
+				} else {
+					return;
+				}
+			}
+		}
 
         FormController formController = Collect.getInstance().getFormController();
         Collect.getInstance().getActivityLogger().open();
@@ -2596,7 +2674,6 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 		boolean pendingActivityResult = task.hasPendingActivityResult();
 		boolean hasUsedSavepoint = task.hasUsedSavepoint();
 		int requestCode = task.getRequestCode();
-		SharedPreferences mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 		needLocation = mSharedPreferences.getBoolean(PreferencesActivity.KEY_GPS_FIX,false);
 		if(needLocation){
 			mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);

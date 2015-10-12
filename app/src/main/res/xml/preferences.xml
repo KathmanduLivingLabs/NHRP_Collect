@@ -163,6 +163,17 @@
             android:title="@string/splash_path" />
     </PreferenceCategory>
     <PreferenceCategory
+        android:key="@string/img_compresion"
+        android:title="@string/img_compresion" >
+        <CheckBoxPreference
+            android:id="@+id/enable_image_compression"
+            android:defaultValue="false"
+            android:key="enable_img_compression"
+            android:summary="@string/enable_img_compression_summary"
+            android:title="@string/enable_img_compression" />
+
+    </PreferenceCategory>
+        <PreferenceCategory
         android:key="@string/gps"
         android:title="@string/gps" >
         <CheckBoxPreference

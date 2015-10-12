@@ -339,5 +339,8 @@
     <string name="surveyor_id_title">Surveyor ID</string>
     <string name="sms_receiver_title">SMS Receiver</string>
     <string name="sms_receiver_error">Invalid SMS Receiver</string>
+    <string name="img_compresion">IMAGE COMPRESSION</string>
+    <string name="enable_img_compression_summary">Compress image size to reduce upload time and storage</string>
+    <string name="enable_img_compression">Enable Image Compression</string>
 
 </resources>
