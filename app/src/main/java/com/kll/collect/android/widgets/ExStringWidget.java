@@ -118,6 +118,7 @@ public class ExStringWidget extends QuestionWidget implements IBinaryWidget {
         mAnswer.setSingleLine(false);
 
         String s = prompt.getAnswerText();
+
         if (s != null) {
             mAnswer.setText(s);
         }

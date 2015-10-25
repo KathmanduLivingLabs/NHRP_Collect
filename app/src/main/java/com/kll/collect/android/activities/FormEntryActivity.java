@@ -212,7 +212,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 	private Animation mOutAnimation;
 	private View mStaleView = null;
 
-	private ProgressBar progressBar;
+	//private ProgressBar progressBar;
 	private LinearLayout mQuestionHolder;
 	private View mCurrentView;
 
@@ -273,9 +273,9 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 
 		Log.i("Entry", "Form");
 		mErrorMessage = null;
-		progressBar = (ProgressBar) findViewById(R.id.progress);
-		progressBar.setVisibility(ProgressBar.VISIBLE);
-		progressBar.setProgress(0);
+		//progressBar = (ProgressBar) findViewById(R.id.progress);
+		//progressBar.setVisibility(ProgressBar.VISIBLE);
+		//progressBar.setProgress(0);
 
 
 
@@ -1388,7 +1388,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 	private void progressUpdate(double progressValue, int questioncount) {
 		double progress =  ( progressValue / (double) questioncount) * 100;
 		Log.i("Progess", Double.toString(progress));
-		progressBar.setProgress((int) progress);
+		//progressBar.setProgress((int) progress);
 		Log.i("Index", Integer.toString(questioncount));
 	}
 

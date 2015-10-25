@@ -31,6 +31,7 @@ import com.kll.collect.android.external.ExternalSelectChoice;
 import com.kll.collect.android.views.MediaLayout;
 
 import android.content.Context;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.CompoundButton;
@@ -62,7 +63,7 @@ public class SelectOneWidget extends QuestionWidget implements
             mItems = prompt.getSelectChoices();
         }
 		buttons = new ArrayList<RadioButton>();
-
+		Log.i("Selected", "single select");
 		// Layout holds the vertical list of buttons
 		LinearLayout buttonLayout = new LinearLayout(context);
 

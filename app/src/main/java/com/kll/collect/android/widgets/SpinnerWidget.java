@@ -14,6 +14,7 @@
 
 package com.kll.collect.android.widgets;
 
+import java.util.ArrayList;
 import java.util.Vector;
 
 import org.javarosa.core.model.SelectChoice;
@@ -27,14 +28,19 @@ import com.kll.collect.android.R;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+import android.widget.EditText;
+import android.widget.ListAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -45,19 +51,21 @@ import com.kll.collect.android.external.ExternalDataUtil;
  * SpinnerWidget handles select-one fields. Instead of a list of buttons it uses a spinner, wherein
  * the user clicks a button and the choices pop up in a dialogue box. The goal is to be more
  * compact. If images, audio, or video are specified in the select answers they are ignored.
- * 
+ * z
  * @author Jeff Beorse (jeff@beorse.net)
  */
 public class SpinnerWidget extends QuestionWidget {
     Vector<SelectChoice> mItems;
     Spinner spinner;
+    AutoCompleteTextView autoCompleteTextView;
     String[] choices;
+
     private static final int BROWN = 0xFF936931;
 
 
     public SpinnerWidget(Context context, FormEntryPrompt prompt) {
         super(context, prompt);
-
+        Log.i("Spineer is choosed", "Choosed");
         // SurveyCTO-added support for dynamic select content (from .csv files)
         XPathFuncExpr xPathFuncExpr = ExternalDataUtil.getSearchXPathExpression(prompt.getAppearanceHint());
         if (xPathFuncExpr != null) {
@@ -66,22 +74,31 @@ public class SpinnerWidget extends QuestionWidget {
             mItems = prompt.getSelectChoices();
         }
 
-        spinner = new Spinner(context);
-        choices = new String[mItems.size()+1];
+
+        // spinner = new Spinner(context);
+        Log.i("happy","dashain");
+        autoCompleteTextView = new AutoCompleteTextView(context);
+
+        choices = new String[mItems.size() + 1];
         for (int i = 0; i < mItems.size(); i++) {
             choices[i] = prompt.getSelectChoiceText(mItems.get(i));
         }
         choices[mItems.size()] = getContext().getString(R.string.select_one);
 
         // The spinner requires a custom adapter. It is defined below
-        SpinnerAdapter adapter =
-            new SpinnerAdapter(getContext(), android.R.layout.simple_spinner_item, choices,
-                    TypedValue.COMPLEX_UNIT_DIP, mQuestionFontsize);
+       /* final SpinnerAdapter adapter =
+                new SpinnerAdapter(getContext(), android.R.layout.simple_spinner_item, choices,
+                        TypedValue.COMPLEX_UNIT_DIP, mQuestionFontsize);*/
+        final ArrayAdapter<String> adapter = new ArrayAdapter<String>(getContext(),R.layout.custom_autocomplete,choices);
+        autoCompleteTextView.setAdapter(adapter);
 
-        spinner.setAdapter(adapter);
+       /* spinner.setAdapter(adapter);
+
         spinner.setPrompt(prompt.getQuestionText());
         spinner.setEnabled(!prompt.isReadOnly());
         spinner.setFocusable(!prompt.isReadOnly());
+
+
 
         // Fill in previous answer
         String s = null;
@@ -105,25 +122,48 @@ public class SpinnerWidget extends QuestionWidget {
 			public void onItemSelected(AdapterView<?> parent, View view,
 					int position, long id) {
 				if ( position == mItems.size() ) {
-					Collect.getInstance().getActivityLogger().logInstanceAction(this, "onCheckedChanged.clearValue", 
+					Collect.getInstance().getActivityLogger().logInstanceAction(this, "onCheckedChanged.clearValue",
 		    			"", mPrompt.getIndex());
 				} else {
-					Collect.getInstance().getActivityLogger().logInstanceAction(this, "onCheckedChanged", 
+					Collect.getInstance().getActivityLogger().logInstanceAction(this, "onCheckedChanged",
 			    			mItems.get(position).getValue(), mPrompt.getIndex());
 				}
 			}
 
 			@Override
 			public void onNothingSelected(AdapterView<?> arg0) {
-				
-			}});
-        
-        addView(spinner);
+
+			}});*/
+
+       // addView(spinner);
+
+        addView(autoCompleteTextView);
+
+    }
+
+    @Override
+    public IAnswerData getAnswer() {
+        return null;
+    }
+
+    @Override
+    public void clearAnswer() {
+
+    }
+
+    @Override
+    public void setFocus(Context context) {
+
+    }
+
+    @Override
+    public void setOnLongClickListener(OnLongClickListener l) {
 
     }
 
 
-    @Override
+
+    /*@Override
     public IAnswerData getAnswer() {
     	clearFocus();
         int i = spinner.getSelectedItemPosition();
@@ -149,27 +189,27 @@ public class SpinnerWidget extends QuestionWidget {
         // Hide the soft keyboard if it's showing.
         InputMethodManager inputManager =
             (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
-        inputManager.hideSoftInputFromWindow(this.getWindowToken(), 0);
+        inputManager.showSoftInputFromInputMethod(this.getWindowToken(), 0);
 
     }
+    */
 
     // Defines how to display the select answers
     private class SpinnerAdapter extends ArrayAdapter<String> {
         Context context;
-        String[] items = new String[] {};
+        String[] items = new String[]{};
         int textUnit;
         float textSize;
 
 
         public SpinnerAdapter(final Context context, final int textViewResourceId,
-                final String[] objects, int textUnit, float textSize) {
+                              final String[] objects, int textUnit, float textSize) {
             super(context, textViewResourceId, objects);
             this.items = objects;
             this.context = context;
             this.textUnit = textUnit;
             this.textSize = textSize;
         }
-
 
         @Override
         // Defines the text view parameters for the drop down list entries
@@ -180,7 +220,7 @@ public class SpinnerWidget extends QuestionWidget {
                 convertView = inflater.inflate(R.layout.custom_spinner_item, parent, false);
             }
 
-            TextView tv = (TextView) convertView.findViewById(android.R.id.text1);
+           TextView tv = (TextView) convertView.findViewById(android.R.id.text1);
             tv.setTextSize(textUnit, textSize);
             tv.setBackgroundColor(Color.WHITE);
         	tv.setPadding(10, 10, 10, 10); // Are these values OK?
@@ -208,7 +248,7 @@ public class SpinnerWidget extends QuestionWidget {
                 convertView = inflater.inflate(android.R.layout.simple_spinner_item, parent, false);
             }
 
-            TextView tv = (TextView) convertView.findViewById(android.R.id.text1);
+           TextView tv = (TextView) convertView.findViewById(android.R.id.text1);
             tv.setText(items[position]);
             tv.setTextSize(textUnit, textSize);
             tv.setTextColor(Color.BLACK);
@@ -223,7 +263,7 @@ public class SpinnerWidget extends QuestionWidget {
     }
 
 
-    @Override
+   /* @Override
     public void setOnLongClickListener(OnLongClickListener l) {
         spinner.setOnLongClickListener(l);
     }
@@ -233,6 +273,5 @@ public class SpinnerWidget extends QuestionWidget {
     public void cancelLongPress() {
         super.cancelLongPress();
         spinner.cancelLongPress();
-    }
-
+    }*/
 }
