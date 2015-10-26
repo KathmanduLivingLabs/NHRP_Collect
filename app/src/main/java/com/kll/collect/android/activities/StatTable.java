@@ -2,19 +2,26 @@ package com.kll.collect.android.activities;
 
 import android.app.Activity;
 
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.telephony.SmsManager;
 
+
+import android.widget.Button;
 import android.widget.ExpandableListView;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 
 import com.kll.collect.android.R;
 import com.kll.collect.android.adapters.ExpandableListAdapter;
+import com.kll.collect.android.preferences.PreferencesActivity;
 import com.kll.collect.android.provider.FormsProviderAPI;
 
 
@@ -47,6 +54,8 @@ public class StatTable extends Activity{
     HashMap listDataChild;
     List listDataHeader;
     private Spinner spinner;
+    private Button send_sms;
+    private Button send_email;
     private ArrayList<InstanceStatProvider> instanceStatProviders;
 
     public StatTable()
@@ -85,6 +94,44 @@ public class StatTable extends Activity{
             }
 
         });
+        send_sms = (Button) findViewById(R.id.send_sms);
+        send_sms.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                smsStat(instanceStatProviders);
+            }
+        });
+
+    }
+
+    private void smsStat(ArrayList<InstanceStatProvider> instanceStatProviders) {
+        try {
+            SmsManager smsManager = SmsManager.getDefault();
+            SharedPreferences mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+            String sms_receiver = mSharedPreferences.getString(PreferencesActivity.KEY_SMS_RECEIVER, null);
+            String surveyor_id = mSharedPreferences.getString(PreferencesActivity.KEY_SURVEYOR_ID, null);
+            String smsBody = "upd ";
+            String seperator = ",";
+            String formID = "A";
+            for (int i = 0; i < instanceStatProviders.size(); i++) {
+                if (i == 0)
+                    smsBody = smsBody + formID + seperator + Integer.toString(instanceStatProviders.get(i).getCompleted()) + seperator + Integer.toString(instanceStatProviders.get(i).getSent()) + seperator + Integer.toString(instanceStatProviders.get(i).getNo_attachment()) + seperator + Integer.toString(instanceStatProviders.get(i).getNot_sent());
+                else if ((i == instanceStatProviders.size() - 1)&& !(surveyor_id.equals("")))
+                    smsBody = smsBody + seperator + formID + seperator + Integer.toString(instanceStatProviders.get(i).getCompleted()) + seperator + Integer.toString(instanceStatProviders.get(i).getSent()) + seperator + Integer.toString(instanceStatProviders.get(i).getNo_attachment()) + seperator + Integer.toString(instanceStatProviders.get(i).getNot_sent()) + seperator + surveyor_id;
+                else
+                    smsBody = smsBody + seperator + formID + seperator + Integer.toString(instanceStatProviders.get(i).getCompleted()) + seperator + Integer.toString(instanceStatProviders.get(i).getSent()) + seperator + Integer.toString(instanceStatProviders.get(i).getNo_attachment()) + seperator + Integer.toString(instanceStatProviders.get(i).getNot_sent());
+                char temp = (char) (((int) formID.charAt(0))+1);
+                formID = Character.toString(temp);
+            }
+            Log.i("Message", smsBody);
+            smsManager.sendTextMessage(sms_receiver, null, smsBody, null, null);
+            Toast.makeText(getApplicationContext(), "Your sms has successfully sent!",Toast.LENGTH_LONG).show();
+
+        }catch (Exception ex) {
+            Toast.makeText(getApplicationContext(),"Your sms has failed...!",Toast.LENGTH_LONG).show();
+            ex.printStackTrace();
+        }
+
 
     }
 

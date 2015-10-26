@@ -329,5 +329,18 @@
     <string name="gps">GPS</string>
     <string name="enable_gps_fix_summary">Start fixing gps on start of the every survey</string>
     <string name="enable_gps_fix">Enable GPS fix</string>
+    <string name="send_sms">Send via SMS</string>
+    <string name="send_email">Send via Email</string>
+    <string name="sms_receiver">9841789556</string>
+    <string name="change_sms_receiver">SMS Receiver</string>
+    <string name="surveyor">surveyor</string>
+    <string name="surveyor_title">Surveyor</string>
+    <string name="surveyor_id">Unique Id of Surveyor ( If Provided)</string>
+    <string name="surveyor_id_title">Surveyor ID</string>
+    <string name="sms_receiver_title">SMS Receiver</string>
+    <string name="sms_receiver_error">Invalid SMS Receiver</string>
+    <string name="img_compresion">IMAGE COMPRESSION</string>
+    <string name="enable_img_compression_summary">Compress image size to reduce upload time and storage</string>
+    <string name="enable_img_compression">Enable Image Compression</string>
 
 </resources>

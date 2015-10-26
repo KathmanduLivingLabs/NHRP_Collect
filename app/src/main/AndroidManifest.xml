@@ -42,6 +42,8 @@
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.USE_CREDENTIALS" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+
 
     <!--
           for Maps v2 functionality, want:
@@ -264,7 +266,7 @@
             android:label="@string/title_activity_geo_shape" >
         </activity>
         <activity
-            android:name="com.kll.collect.android.activities.GeoTraceActivity"
+            android:name=".activities.GeoShapeActivity$GeoTraceActivity"
             android:configChanges="orientation"
             android:label="@string/title_activity_geo_trace" >
             

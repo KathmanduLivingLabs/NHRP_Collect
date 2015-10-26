@@ -19,13 +19,25 @@ the License.
   android:layout_height="fill_parent"
   android:id="@+id/rl" >
 
+    <ProgressBar
+        android:id="@+id/progress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:indeterminate="false"
+        android:maxHeight="20dip"
+        android:minHeight="20dip"
+        android:progress="50"
+        android:progressDrawable="@drawable/progressbar" />
     <LinearLayout
      android:id="@+id/questionholder"
         android:orientation="horizontal"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_above="@+id/buttonholder">
+        android:layout_above="@+id/buttonholder"
+        android:layout_marginTop="50dp">
+
         </LinearLayout>
 
     <LinearLayout

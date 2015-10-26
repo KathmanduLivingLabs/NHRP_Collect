@@ -72,7 +72,28 @@
             android:key="submission_url"
             android:layout="?android:attr/preferenceLayoutChild"
             android:title="@string/submission_url" />
+        <EditTextPreference
+            android:id="@+id/sms_receiver"
+            android:defaultValue=""
+            android:dialogTitle="@string/change_sms_receiver"
+            android:inputType="textNoSuggestions"
+            android:key="sms_receiver"
+            android:layout="?android:attr/preferenceLayoutChild"
+            android:title="@string/sms_receiver_title" />
     </PreferenceCategory>
+    <PreferenceCategory
+        android:key="@string/surveyor"
+        android:title="@string/surveyor_title" >
+        <EditTextPreference
+            android:id="@+id/surveyor_id"
+            android:defaultValue=""
+            android:dialogTitle="@string/surveyor_id_title"
+            android:inputType="textNoSuggestions"
+            android:key="surveyor_id"
+            android:layout="?android:attr/preferenceLayoutChild"
+            android:title="@string/surveyor_id" />
+    </PreferenceCategory>
+
     <PreferenceCategory
         android:key="@string/autosend"
         android:title="@string/autosend" >
@@ -142,6 +163,17 @@
             android:title="@string/splash_path" />
     </PreferenceCategory>
     <PreferenceCategory
+        android:key="@string/img_compresion"
+        android:title="@string/img_compresion" >
+        <CheckBoxPreference
+            android:id="@+id/enable_image_compression"
+            android:defaultValue="false"
+            android:key="enable_img_compression"
+            android:summary="@string/enable_img_compression_summary"
+            android:title="@string/enable_img_compression" />
+
+    </PreferenceCategory>
+        <PreferenceCategory
         android:key="@string/gps"
         android:title="@string/gps" >
         <CheckBoxPreference

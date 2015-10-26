@@ -10,7 +10,7 @@ import org.javarosa.form.api.FormEntryPrompt;
 
 import com.kll.collect.android.R;
 import com.kll.collect.android.activities.FormEntryActivity;
-import com.kll.collect.android.activities.GeoTraceActivity;
+import com.kll.collect.android.activities.GeoShapeActivity;
 import com.kll.collect.android.application.Collect;
 
 import android.app.Activity;
@@ -75,7 +75,7 @@ public class GeoTraceWidget extends QuestionWidget implements IBinaryWidget {
 				// TODO Auto-generated method stub
 				Collect.getInstance().getFormController().setIndexWaitingForData(mPrompt.getIndex());
 				Intent i = null;
-				i = new Intent(getContext(), GeoTraceActivity.class);
+				i = new Intent(getContext(), GeoShapeActivity.GeoTraceActivity.class);
 				String s = mStringAnswer.getText().toString();
 				if ( s.length() != 0 ) {
 					i.putExtra(TRACE_LOCATION, s);

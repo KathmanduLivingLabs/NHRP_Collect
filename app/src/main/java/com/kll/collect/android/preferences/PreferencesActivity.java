@@ -64,13 +64,14 @@ public class PreferencesActivity extends PreferenceActivity implements
 	public static final String KEY_SELECTED_GOOGLE_ACCOUNT = "selected_google_account";
 	public static final String KEY_GOOGLE_SUBMISSION = "google_submission_id";
 	public static final String KEY_GPS_FIX = "enable_gps_fix";
+	public static final String KEY_ENABLE_IMAGE_COMPRESSION = "enable_img_compression";
 
 	public static final String KEY_SERVER_URL = "server_url";
 	public static final String KEY_USERNAME = "username";
 	public static final String KEY_PASSWORD = "password";
-
+	public static final String KEY_SMS_RECEIVER = "sms_receiver";
 	public static final String KEY_PROTOCOL = "protocol";
-
+	public static final String KEY_SURVEYOR_ID = "surveyor_id";
 	// must match /res/arrays.xml
 	public static final String PROTOCOL_ODK_DEFAULT = "odk_default";
 	public static final String PROTOCOL_GOOGLE = "google";
@@ -105,14 +106,19 @@ public class PreferencesActivity extends PreferenceActivity implements
 	private EditTextPreference mServerUrlPreference;
 	private EditTextPreference mUsernamePreference;
 	private EditTextPreference mPasswordPreference;
+	private EditTextPreference mSmsReceiverPreference;
+	private EditTextPreference mSurveyorPreference;
+
 	private ListPreference mSelectedGoogleAccountPreference;
 	private ListPreference mFontSizePreference;
 	private ListPreference mNavigationPreference;
 	private ListPreference mConstraintBehaviorPreference;
 
+
 	private CheckBoxPreference mAutosendWifiPreference;
 	private CheckBoxPreference mAutosendNetworkPreference;
 	private CheckBoxPreference mEnableGpsFixPreference;
+	private CheckBoxPreference mEnableImgCompression;
 	private ListPreference mProtocolPreference;
 
 	@Override
@@ -138,6 +144,10 @@ public class PreferencesActivity extends PreferenceActivity implements
 		PreferenceCategory gpsFixCategory = (PreferenceCategory) findPreference(getString(R.string.gps));
 		mEnableGpsFixPreference = (CheckBoxPreference) findPreference(KEY_GPS_FIX);
 		boolean enableGPSFix =mEnableGpsFixPreference.isChecked();
+
+		PreferenceCategory imgCompressionCategory = (PreferenceCategory) findPreference(getString(R.string.img_compresion));
+		mEnableImgCompression = (CheckBoxPreference) findPreference(KEY_ENABLE_IMAGE_COMPRESSION);
+		boolean enableImgCompression = mEnableImgCompression.isChecked();
 
 				PreferenceCategory autosendCategory = (PreferenceCategory) findPreference(getString(R.string.autosend));
 		mAutosendWifiPreference = (CheckBoxPreference) findPreference(KEY_AUTOSEND_WIFI);
@@ -201,14 +211,42 @@ public class PreferencesActivity extends PreferenceActivity implements
 				return true;
 			}
 		});
+		mSmsReceiverPreference = (EditTextPreference) findPreference(KEY_SMS_RECEIVER);
+		mSmsReceiverPreference.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+			@Override
+			public boolean onPreferenceChange(Preference preference, Object newValue) {
+				String sms_receiver = newValue.toString();
+				if(checkReceiver(sms_receiver)){
+					preference.setSummary(newValue.toString());
+					return true;
+				}else{
+					Toast.makeText(getApplicationContext(),
+							R.string.sms_receiver_error, Toast.LENGTH_SHORT)
+							.show();
+					return false;
+				}
+
+			}
+		});
+		mSmsReceiverPreference.setSummary(mSmsReceiverPreference.getText());
+
+		mSurveyorPreference = (EditTextPreference) findPreference(KEY_SURVEYOR_ID);
+		mSurveyorPreference.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+			@Override
+			public boolean onPreferenceChange(Preference preference, Object newValue) {
+				String surveyor_id = newValue.toString();
+				preference.setSummary(newValue.toString());
+				return true;
+			}
+		});
+		mSurveyorPreference.setSummary(mSurveyorPreference.getText());
 
 		mServerUrlPreference = (EditTextPreference) findPreference(KEY_SERVER_URL);
 		mServerUrlPreference
 				.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
 					@Override
 					public boolean onPreferenceChange(Preference preference,
-							Object newValue) {
-						String url = newValue.toString();
+							Object newValue) {String url = newValue.toString();
 
 						// remove all trailing "/"s
 						while (url.endsWith("/")) {
@@ -506,6 +544,16 @@ public class PreferencesActivity extends PreferenceActivity implements
 		if (!(fontAvailable || defaultAvailable
 				|| showSplashAvailable || navigationAvailable || adminMode || resolutionAvailable)) {
 			getPreferenceScreen().removePreference(clientCategory);
+		}
+
+	}
+
+	private boolean checkReceiver(String sms_receiver) {
+		if((sms_receiver.length()==10 && sms_receiver.startsWith("9")) || (sms_receiver.length()==14 && sms_receiver.startsWith("+9779"))){
+			return true;
+		}else
+		{
+			return false;
 		}
 
 	}

@@ -370,6 +370,7 @@ public class FormHierarchyActivity extends ListActivity {
     protected void onListItemClick(ListView l, View v, int position, long id) {
         HierarchyElement h = (HierarchyElement) l.getItemAtPosition(position);
         FormIndex index = h.getFormIndex();
+
         if (index == null) {
             goUpLevel();
             return;

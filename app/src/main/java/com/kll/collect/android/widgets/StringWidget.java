@@ -55,7 +55,11 @@ public class StringWidget extends QuestionWidget {
         mAnswer = new EditText(context);
         mAnswer.setId(QuestionWidget.newUniqueId());
         mReadOnly = prompt.isReadOnly() || readOnlyOverride;
+        String st = prompt.getConstraintText();
 
+        if(st != null) {
+            Log.i("Constraint", prompt.getConstraintText());
+        }
         mAnswer.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mAnswerFontsize);
 
         TableLayout.LayoutParams params = new TableLayout.LayoutParams();
@@ -109,6 +113,7 @@ public class StringWidget extends QuestionWidget {
     protected void setupChangeListener() {
         mAnswer.addTextChangedListener(new TextWatcher() {
         	private String oldText = "";
+
 
 			@Override
 			public void afterTextChanged(Editable s) {
